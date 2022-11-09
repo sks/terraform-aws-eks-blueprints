@@ -1,3 +1,9 @@
+terraform {
+  backend "s3" {
+    key = "terraform_states/infra/external-secrets.state"
+  }
+}
+
 provider "aws" {
   region = local.region
 }
@@ -31,7 +37,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  name      = basename(path.cwd)
+  name      = var.name == "" ? basename(path.cwd) : var.name
   namespace = "external-secrets"
   region    = "us-west-2"
 
@@ -46,6 +52,7 @@ locals {
   tags = {
     Blueprint  = local.name
     GithubRepo = "github.com/aws-ia/terraform-aws-eks-blueprints"
+    created_by = data.aws_caller_identity.current.arn,
   }
 }
 
